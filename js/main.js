@@ -18,8 +18,22 @@ Vue.component('to-do-list', {
             </div>
         </div>
         <div class="column second-column">
+            <div v-for="card in cards" class="content">
+                <h3>{{ card.name }}</h3>
+                <ul v-for="task in card.tasks">
+                <input type="checkbox" value="task">
+                    {{ task }}
+                </ul>
+            </div>
         </div>
         <div class="column third-column">
+            <div v-for="card in cards" class="content">
+                <h3>{{ card.name }}</h3>
+                <ul v-for="task in card.tasks">
+                <input type="checkbox" value="task">
+                    {{ task }}
+                </ul>
+            </div>
         </div>
     </div>
     `,
@@ -62,7 +76,7 @@ Vue.component('card-create', {
     <form @submit.prevent="cardCreate">
         <legend>Создание карточки</legend>
         <ul>
-            <li v-for="error in errors">{{ error }}</li>
+            <li v-for="error in errors">{{ error }}!</li>
         </ul>
         <input type="text" placeholder="Название карточки" v-model="name">
         <h5>Задания</h5>
@@ -85,7 +99,7 @@ Vue.component('card-create', {
             tasks: [],
             cardNumber: 1,
             errors: [],
-            inputs: 3,
+            inputs: 0,
         }
     },
     methods: {
@@ -111,19 +125,11 @@ Vue.component('card-create', {
         },
         addTasks() {
             this.errors = []
-            if(this.inputs == 5) {
-                this.errors.push("Больше пяти заданий добавить нельзя")
-            } else {
-                this.inputs++
-            }
+            this.inputs++
         },
         deleteTasks() {
             this.errors = []
-            if(this.inputs == 3) {
-                this.errors.push("Меньше трех заданий создать нельзя")
-            } else {
-                this.inputs--
-            }
+            this.inputs--
         }
     },
     computed: {
