@@ -12,6 +12,11 @@
 }
 .column {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    flex-wrap: wrap;
 }
 .first-column {
     background-color: #3c65ff;
@@ -25,7 +30,7 @@
 form {
     margin: 0 auto;
     width: 600px;
-    height: 600px;
+    height: fit-content;
     font-size: 32px;
     color: white;
     /*background-image: url("../img/form-bg.jpg");*/
@@ -38,7 +43,7 @@ form {
     flex-direction: column;
     text-align: center;
 }
-input {
+input, button {
     font-size: 24px;
     margin: 0 auto;
     padding: 5px;
@@ -53,4 +58,11 @@ input:focus {
 }
 ::placeholder {
     color: rgba(255, 255, 255, 0.5);
+}
+.content {
+    width: 150px;
+    height: fit-content;
+    background-color: white;
+    border-radius: 10px;
+    padding: 10px;
 }
