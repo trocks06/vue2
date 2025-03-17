@@ -12,8 +12,9 @@
 </head>
 <body>
     <div id="app">
-        <card-create :cards="cards"></card-create>
-        <to-do-list :cards="cards"></to-do-list>
+        <button id="modal-button" @click="modalClick">Создать карточку</button>
+        <card-create :modalOpen="modalOpen" :modalClick="modalClick"></card-create>
+        <to-do-list :column1="column1" :column2="column2" :column3="column3"></to-do-list>
     </div>
 </body>
 </html>

@@ -1,7 +1,15 @@
 let eventBus = new Vue()
 Vue.component('to-do-list', {
     props: {
-        columns: {
+        column1: {
+            type: Array,
+            required: true,
+        },
+        column2: {
+            type: Array,
+            required: true,
+        },
+        column3: {
             type: Array,
             required: true,
         }
@@ -9,29 +17,35 @@ Vue.component('to-do-list', {
     template: `
     <div class="main-div">
         <div class="column first-column">
-            <div v-for="card in cards" class="content">
+            <div v-for="card in column1" class="content">
                 <h3>{{ card.name }}</h3>
                 <ul v-for="task in card.tasks">
-                <input type="checkbox" value="task">
-                    {{ task }}
+                    <li v-for="task in card.tasks">
+                        <input type="checkbox" value="task">
+                        {{ task }}
+                    </li>
                 </ul>
             </div>
         </div>
         <div class="column second-column">
-            <div v-for="card in cards" class="content">
+            <div v-for="card in column2" class="content">
                 <h3>{{ card.name }}</h3>
-                <ul v-for="task in card.tasks">
-                <input type="checkbox" value="task">
-                    {{ task }}
+                <ul>
+                    <li v-for="task in card.tasks">
+                        <input type="checkbox" value="task">
+                        {{ task }}
+                    </li>
                 </ul>
             </div>
         </div>
         <div class="column third-column">
-            <div v-for="card in cards" class="content">
+            <div v-for="card in column3" class="content">
                 <h3>{{ card.name }}</h3>
                 <ul v-for="task in card.tasks">
-                <input type="checkbox" value="task">
-                    {{ task }}
+                    <li v-for="task in card.tasks">
+                        <input type="checkbox" value="task">
+                        {{ task }}
+                    </li>
                 </ul>
             </div>
         </div>
@@ -42,76 +56,76 @@ Vue.component('to-do-list', {
         };
     },
     computed: {
-        cards() {
-            return JSON.parse(localStorage.getItem('cards'));
-        }
     },
-    mounted() {
-        eventBus.$on('card-added', cards => {
-            cards.push(productReview)
-        })
-    }
-})
-
-Vue.component('card', {
-    props: {
-        cards: {
-            type: Array,
-            required: true,
-        }
-    },
-    template: `
-    <div class="card">
-        <h3>{{ card.name }}</h3>
-        <ul v-for="task in card.tasks">
-            <input type="checkbox" value="task">
-        </ul>
-    </div>
-    `,
-
 })
 
 Vue.component('card-create', {
+    props: {
+        modalOpen: {
+            type: Boolean,
+            required: true
+        },
+        closeModal: {
+            type: Function,
+            required: true
+        }
+    },
     template: `
-    <form @submit.prevent="cardCreate">
-        <legend>Создание карточки</legend>
-        <ul>
-            <li v-for="error in errors">{{ error }}!</li>
-        </ul>
-        <input type="text" placeholder="Название карточки" v-model="name">
-        <h5>Задания</h5>
-        <button type="button" @click="addTasks">Добавить задание</button>
-        <button type="button" @click="deleteTasks">Убрать задание</button>
-        <div v-for="(input, index) in inputs" :key='index' id="tasker">
-            <input type="text" placeholder="Задание" v-model="tasks[index]">
-        </div>
-
-        <div>
-            <input type="submit" value="Создать">
-        </div>
-
-    </form>
-    
+    <div class="modal" :class="{ closedModal: !modalOpen }>
+        <form @submit.prevent="saveCard">
+            <legend>Создание карточки</legend>
+            <ul>
+                <li v-for="error in errors">{{ error }}!</li>
+            </ul>
+            <input type="text" placeholder="Название карточки" v-model="name">
+            <h5>Задания</h5>
+            <button type="button" @click="addTask">Добавить задание</button>
+            <div v-for="(input, index) in inputs" :key='index' id="tasker">
+                <input type="text" placeholder="Задание" v-model="newTasks[index]">
+            </div>
+            <div>
+                <input type="submit" value="Создать">
+                <button type="button" @click=">Закрыть</button>
+            </div>
+        </form>
+    </div>
     `,
     data() {
         return {
-            name: null,
-            tasks: [],
-            cardNumber: 1,
+            name: '',
+            newTasks: [],
             errors: [],
-            inputs: 0,
+            inputs: 3,
         }
     },
     methods: {
-        cardCreate() {
+        saveCard() {
             this.errors = []
-            if(!this.name) {this.errors.push("Введите название карточки")}
-            if (this.tasks.length < 3 || this.tasks.length > 5) {
+            this.name = this.name.trim()
+            for (let i = 0; i < this.newTasks.length; i++) {
+                this.newTasks[i] = this.newTasks[i].trim()
+                if (this.newTasks[i] === '') {
+                    this.newTasks.splice(i, 1)
+                    i--;
+                }
+            }
+            if (!this.name || this.name === '') {
+                this.errors.push("Введите название карточки")
+            }
+            if (this.newTasks.length < 3 || this.newTasks.length > 5) {
                 this.errors.push("Добавьте от трех до пяти заданий")
-            } else {
+            }
+            if (this.name && this.newTasks.length <= 5 && this.newTasks.length >= 3) {
                 let card = {
                     name: this.name,
-                    tasks: this.tasks,
+                    tasks: [],
+                }
+                for (let i = 0; i < this.newTasks.length; i++) {
+                    let task = {
+                        taskName: this.newTasks[i],
+                        taskCompleted: false,
+                    };
+                    card.tasks.push(task)
                 }
                 if(!this.cards) {
                     this.cards = []
@@ -120,17 +134,20 @@ Vue.component('card-create', {
                 localStorage.setItem('cards', JSON.stringify(this.cards))
                 eventBus.$emit('card-created', this.cards)
                 this.name = null
-                this.tasks = []
+                this.newTasks = []
             }
         },
-        addTasks() {
+        addTask() {
             this.errors = []
-            this.inputs++
+            if(this.inputs === 5) {
+                this.errors.push("Больше пяти заданий сделать нельзя")
+            } else {
+                this.inputs++
+            }
         },
-        deleteTasks() {
-            this.errors = []
-            this.inputs--
-        }
+        clickOnModal() {
+            this.$emit('click-on-modal', this.modalOpen);
+        },
     },
     computed: {
         cards() {
@@ -140,15 +157,23 @@ Vue.component('card-create', {
             }
             return cards
         }
-    }
+    },
 })
 
 let app = new Vue({
     el: '#app',
     data: {
-        cards: [],
-        columns: ['first-column', 'second-column', 'third-column'],
+        column1: [],
+        column2: [],
+        column3: [],
+        isModalOpen: false,
     },
     methods: {
+        modalOpen() {
+            return this.isModalOpen = true
+        },
+        modalClose() {
+            return this.isModalOpen = false
+        }
     }
 })
