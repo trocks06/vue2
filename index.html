@@ -13,8 +13,11 @@
 <body>
     <div id="app">
         <button id="modal-button" @click="modalOpen">Создать карточку</button>
-        <card-create :is-modal-open="isModalOpen" :column1="column1" :column2="column2" :column3="column3" @add-card="addCard" @modal-close="modalClose"></card-create>
-        <to-do-list :column1="column1" :column2="column2" :column3="column3" @move-to-column2="moveToColumn2"></to-do-list>
+        <card-create :is-modal-open="isModalOpen" :column1="column1" :column2="column2"
+                     :column3="column3" @add-card="addCard" @modal-close="modalClose"></card-create>
+        <to-do-list :column1="column1" :column2="column2" :column3="column3"
+                    @move-to-column1="moveToColumn1" @move-to-column2="moveToColumn2"
+                    @move-to-column3="moveToColumn3"></to-do-list>
     </div>
 </body>
 </html>

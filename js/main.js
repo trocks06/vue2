@@ -61,12 +61,25 @@ Vue.component('to-do-list', {
             task.taskCompleted = !task.taskCompleted;
             this.updateLocalStorage()
         },
-        checkTaskComplete(card, index) {
+        checkTaskComplete(card, index, column) {
             let tasks = card.tasks.length
             let completedTasks = card.tasks.filter(task => task.taskCompleted).length;
-            if (completedTasks >= tasks * 0.5) {
-                this.$emit('move-to-column2', card, index);
+            if (column === 'column1') {
+                if (completedTasks >= tasks * 0.5) {
+                    this.$emit('move-to-column2', card, index);
+                }
+            } else if (column === 'column2') {
+                if (completedTasks < tasks * 0.5) {
+                    this.$emit('move-to-column1', card, index);
+                } else if (completedTasks === tasks) {
+                    this.$emit('move-to-column3', card, index);
+                }
+            } else if (column === 'column3') {
+                if (completedTasks >= tasks * 0.5) {
+                    this.$emit('move-to-column2', card, index);
+                }
             }
+
             this.updateLocalStorage()
         },
         updateLocalStorage() {
@@ -75,13 +88,6 @@ Vue.component('to-do-list', {
             localStorage.setItem('column3', JSON.stringify(this.column3));
         }
     },
-    watch: {
-        column1(newVal) {
-            newVal.forEach((card, index) => {
-                this.checkTaskComplete(card, index);
-            });
-        },
-    }
 })
 
 Vue.component('card-create', {
@@ -180,6 +186,14 @@ Vue.component('card-create', {
     },
 })
 
+Vue.component('column-block', {
+    template: `
+    <div class="block">
+        
+    </div>
+    `
+})
+
 let app = new Vue({
     el: '#app',
     data: {
@@ -199,11 +213,19 @@ let app = new Vue({
             this.column1.push(card);
             this.saveColumnData();
         },
+        moveToColumn1(card, index) {
+            this.column2.splice(index, 1)
+            this.column1.push(card);
+            this.saveColumnData()
+        },
         moveToColumn2(card, index) {
             this.column1.splice(index, 1)
             this.column2.push(card);
-            this.column1 = [...this.column1];
-            this.column2 = [...this.column2];
+            this.saveColumnData()
+        },
+        moveToColumn3(card, index) {
+            this.column2.splice(index, 1)
+            this.column3.push(card);
             this.saveColumnData()
         },
         saveColumnData() {
@@ -211,5 +233,22 @@ let app = new Vue({
             localStorage.setItem('column2', JSON.stringify(this.column2));
             localStorage.setItem('column3', JSON.stringify(this.column3));
         }
+    },
+    watch: {
+        column1(newVal) {
+            newVal.forEach((card, index) => {
+                this.checkTaskComplete(card, index, 'column1');
+            });
+        },
+        column2(newVal) {
+            newVal.forEach((card, index) => {
+                this.checkTaskComplete(card, index, 'column2');
+            });
+        },
+        column3(newVal) {
+            newVal.forEach((card, index) => {
+                this.checkTaskComplete(card, index, 'column3');
+            });
+        },
     }
 })
