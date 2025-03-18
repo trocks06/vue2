@@ -1,4 +1,3 @@
-let eventBus = new Vue()
 Vue.component('to-do-list', {
     props: {
         column1: {
@@ -17,34 +16,37 @@ Vue.component('to-do-list', {
     template: `
     <div class="main-div">
         <div class="column first-column">
-            <div v-for="card in column1" class="content">
+            <div v-for="(card, index) in column1" :key="index" class="content">
                 <h3>{{ card.name }}</h3>
-                <ul v-for="task in card.tasks">
-                    <li v-for="task in card.tasks">
-                        <input type="checkbox" value="task">
-                        {{ task }}
+                <ul class="no-marker">
+                    <li v-for="(task, index) in card.tasks" :key="index">
+                        <input type="checkbox" :checked="task.taskCompleted"
+                        @change="toggleTaskCompletion(task, index)">
+                        {{ task.taskName }}
                     </li>
                 </ul>
             </div>
         </div>
         <div class="column second-column">
-            <div v-for="card in column2" class="content">
+            <div v-for="(card, index) in column2" :key="index" class="content">
                 <h3>{{ card.name }}</h3>
-                <ul>
-                    <li v-for="task in card.tasks">
-                        <input type="checkbox" value="task">
-                        {{ task }}
+                <ul class="no-marker">
+                    <li v-for="(task, index) in card.tasks" :key="index">
+                        <input type="checkbox" :checked="task.taskCompleted"
+                        @change="toggleTaskCompletion(task, index)">
+                        {{ task.taskName }}
                     </li>
                 </ul>
             </div>
         </div>
         <div class="column third-column">
-            <div v-for="card in column3" class="content">
+            <div v-for="(card, index) in column3" :key="index" class="content">
                 <h3>{{ card.name }}</h3>
-                <ul v-for="task in card.tasks">
-                    <li v-for="task in card.tasks">
-                        <input type="checkbox" value="task">
-                        {{ task }}
+                <ul class="no-marker">
+                    <li v-for="(task, index) in card.tasks" :key="index">
+                        <input type="checkbox" :checked="task.taskCompleted"
+                        @change="toggleTaskCompletion(task)">
+                        {{ task.taskName }}
                     </li>
                 </ul>
             </div>
@@ -52,26 +54,57 @@ Vue.component('to-do-list', {
     </div>
     `,
     data() {
-        return {
-        };
+        return {};
     },
-    computed: {
+    methods: {
+        toggleTaskCompletion(task) {
+            task.taskCompleted = !task.taskCompleted;
+            this.updateLocalStorage()
+        },
+        checkTaskComplete(card, index) {
+            let tasks = card.tasks.length
+            let completedTasks = card.tasks.filter(task => task.taskCompleted).length;
+            if (completedTasks >= tasks * 0.5) {
+                this.$emit('move-to-column2', card, index);
+            }
+            this.updateLocalStorage()
+        },
+        updateLocalStorage() {
+            localStorage.setItem('column1', JSON.stringify(this.column1));
+            localStorage.setItem('column2', JSON.stringify(this.column2));
+            localStorage.setItem('column3', JSON.stringify(this.column3));
+        }
     },
+    watch: {
+        column1(newVal) {
+            newVal.forEach((card, index) => {
+                this.checkTaskComplete(card, index);
+            });
+        },
+    }
 })
 
 Vue.component('card-create', {
     props: {
-        modalOpen: {
+        isModalOpen: {
             type: Boolean,
             required: true
         },
-        closeModal: {
-            type: Function,
-            required: true
+        column1: {
+            type: Array,
+            required: true,
+        },
+        column2: {
+            type: Array,
+            required: true,
+        },
+        column3: {
+            type: Array,
+            required: true,
         }
     },
     template: `
-    <div class="modal" :class="{ closedModal: !modalOpen }>
+    <div v-show="isModalOpen" class="modal">
         <form @submit.prevent="saveCard">
             <legend>Создание карточки</legend>
             <ul>
@@ -85,7 +118,7 @@ Vue.component('card-create', {
             </div>
             <div>
                 <input type="submit" value="Создать">
-                <button type="button" @click=">Закрыть</button>
+                <button type="button" @click="closeModal"">Закрыть</button>
             </div>
         </form>
     </div>
@@ -127,12 +160,8 @@ Vue.component('card-create', {
                     };
                     card.tasks.push(task)
                 }
-                if(!this.cards) {
-                    this.cards = []
-                }
-                this.cards.push(card);
-                localStorage.setItem('cards', JSON.stringify(this.cards))
-                eventBus.$emit('card-created', this.cards)
+                this.$emit('add-card', card);
+                this.closeModal();
                 this.name = null
                 this.newTasks = []
             }
@@ -145,35 +174,42 @@ Vue.component('card-create', {
                 this.inputs++
             }
         },
-        clickOnModal() {
-            this.$emit('click-on-modal', this.modalOpen);
+        closeModal() {
+            this.$emit('modal-close');
         },
-    },
-    computed: {
-        cards() {
-            let cards = JSON.parse(localStorage.getItem('cards'))
-            if(!cards) {
-                cards = []
-            }
-            return cards
-        }
     },
 })
 
 let app = new Vue({
     el: '#app',
     data: {
-        column1: [],
-        column2: [],
-        column3: [],
         isModalOpen: false,
+        column1: JSON.parse(localStorage.getItem('column1')) || [],
+        column2: JSON.parse(localStorage.getItem('column2')) || [],
+        column3: JSON.parse(localStorage.getItem('column3')) || [],
     },
     methods: {
         modalOpen() {
-            return this.isModalOpen = true
+            this.isModalOpen = true;
         },
         modalClose() {
-            return this.isModalOpen = false
+            this.isModalOpen = false;
+        },
+        addCard(card) {
+            this.column1.push(card);
+            this.saveColumnData();
+        },
+        moveToColumn2(card, index) {
+            this.column1.splice(index, 1)
+            this.column2.push(card);
+            this.column1 = [...this.column1];
+            this.column2 = [...this.column2];
+            this.saveColumnData()
+        },
+        saveColumnData() {
+            localStorage.setItem('column1', JSON.stringify(this.column1));
+            localStorage.setItem('column2', JSON.stringify(this.column2));
+            localStorage.setItem('column3', JSON.stringify(this.column3));
         }
     }
 })
