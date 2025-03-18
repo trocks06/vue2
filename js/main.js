@@ -79,7 +79,6 @@ Vue.component('to-do-list', {
                     this.$emit('move-to-column2', card, index);
                 }
             }
-
             this.updateLocalStorage()
         },
         updateLocalStorage() {
@@ -88,6 +87,23 @@ Vue.component('to-do-list', {
             localStorage.setItem('column3', JSON.stringify(this.column3));
         }
     },
+    watch: {
+        column1(newVal) {
+            newVal.forEach((card, index) => {
+                this.checkTaskComplete(card, index, 'column1');
+            });
+        },
+        column2(newVal) {
+            newVal.forEach((card, index) => {
+                this.checkTaskComplete(card, index, 'column2');
+            });
+        },
+        column3(newVal) {
+            newVal.forEach((card, index) => {
+                this.checkTaskComplete(card, index, 'column3');
+            });
+        },
+    }
 })
 
 Vue.component('card-create', {
@@ -183,7 +199,7 @@ Vue.component('card-create', {
         closeModal() {
             this.$emit('modal-close');
         },
-    },
+    }
 })
 
 Vue.component('column-block', {
@@ -234,21 +250,4 @@ let app = new Vue({
             localStorage.setItem('column3', JSON.stringify(this.column3));
         }
     },
-    watch: {
-        column1(newVal) {
-            newVal.forEach((card, index) => {
-                this.checkTaskComplete(card, index, 'column1');
-            });
-        },
-        column2(newVal) {
-            newVal.forEach((card, index) => {
-                this.checkTaskComplete(card, index, 'column2');
-            });
-        },
-        column3(newVal) {
-            newVal.forEach((card, index) => {
-                this.checkTaskComplete(card, index, 'column3');
-            });
-        },
-    }
 })
