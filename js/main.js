@@ -12,7 +12,7 @@ Vue.component('to-do-list', {
                 <ul class="no-marker">
                     <li v-for="(task, taskIndex) in card.tasks" :key="taskIndex">
                         <input type="checkbox" 
-                               :checked="task.taskCompleted" :disabled="column2.length >= 5"
+                               :checked="task.taskCompleted" :disabled="checkboxDisabled == 1"
                                @change="toggleTaskCompletion(card, task, 'column1', index)">
                         {{ task.taskName }}
                     </li>
@@ -37,7 +37,7 @@ Vue.component('to-do-list', {
                 <h3>{{ card.name }}</h3>
                 <ul class="no-marker">
                     <li v-for="(task, taskIndex) in card.tasks" :key="taskIndex">
-                        <input type="checkbox" 
+                        <input disabled type="checkbox" 
                                :checked="task.taskCompleted"
                                @change="toggleTaskCompletion(card, task, 'column3', index)">
                         {{ task.taskName }}
@@ -48,10 +48,16 @@ Vue.component('to-do-list', {
         </div>
     </div>
     `,
+    data() {
+        return {
+            checkboxDisabled: Number(JSON.parse(localStorage.getItem('checkboxDisabled'))) || 0,
+        };
+    },
     methods: {
         toggleTaskCompletion(card, task, column, index) {
             task.taskCompleted = !task.taskCompleted;
             this.checkTaskComplete(card, index, column);
+            this.checkTaskInSecondColumn();
             this.updateLocalStorage();
         },
         checkTaskComplete(card, index, column) {
@@ -59,7 +65,12 @@ Vue.component('to-do-list', {
             const completedTasks = card.tasks.filter(task => task.taskCompleted).length;
 
             if (column === 'column1' && completedTasks >= tasks * 0.5) {
-                this.$emit('move-to-column2', card, index, column);
+                if (this.column2.length < 5) {
+                    this.checkboxDisabled = 0;
+                    this.$emit('move-to-column2', card, index, column);
+                } else {
+                    this.checkboxDisabled = 1;
+                }
             } else if (column === 'column2') {
                 if (completedTasks < tasks * 0.5) {
                     this.$emit('move-to-column1', card, index);
@@ -68,11 +79,29 @@ Vue.component('to-do-list', {
                     card.completedDate = new Date();
                     card.completedDate = card.completedDate.toLocaleString()
                 }
-            } else if (column === 'column3' && completedTasks != tasks) {
+            } else if (column === 'column3' && completedTasks !== tasks) {
                 this.$emit('move-to-column2', card, index, column);
             }
         },
+        checkTaskInFirstColumn(card, index) {
+            for (let i = 0; i < this.column1.length; i++) {
+                const tasks = this.column1[i].tasks.length;
+                const completedTasks = this.column1[i].tasks.filter(task => task.taskCompleted).length;
+                if (completedTasks >= tasks * 0.5) {
+                    this.checkTaskComplete(card, i, "column1")
+                }
+            }
+        },
+        checkTaskInSecondColumn() {
+            if (this.column2.length < 5) {
+                this.checkboxDisabled = 0;
+                for (let i = 0; i < this.column1.length; i++) {
+                    this.checkTaskComplete(this.column1[i], i, "column1");
+                }
+            }
+        },
         updateLocalStorage() {
+            localStorage.setItem('checkboxDisabled', JSON.stringify(this.checkboxDisabled));
             localStorage.setItem('column1', JSON.stringify(this.column1));
             localStorage.setItem('column2', JSON.stringify(this.column2));
             localStorage.setItem('column3', JSON.stringify(this.column3));
