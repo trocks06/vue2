@@ -10,17 +10,13 @@
     height: 100vh;
     justify-content: space-between;
 }
-.block {
-    background: rgba(0, 0, 0, 0.5);
-    background-image: url("img/lock.jpg");
-}
 .column {
     width: 100%;
     display: flex;
     min-height: fit-content;
     flex-direction: column;
     gap: 10px;
-    padding: 20px;
+    padding: 15px;
 }
 .first-column {
     background-color: #3c65ff;
