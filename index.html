@@ -12,7 +12,7 @@
 </head>
 <body>
     <div id="app">
-        <button id="modal-button" @click="modalOpen">Создать карточку</button>
+        <button id="modal-button" @click="modalOpen" :class="{ disabled: column1.length >= 3 }">Создать карточку</button>
         <card-create :is-modal-open="isModalOpen" :column1="column1" :column2="column2"
                      :column3="column3" @add-card="addCard" @modal-close="modalClose"></card-create>
         <to-do-list :column1="column1" :column2="column2" :column3="column3"

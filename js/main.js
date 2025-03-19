@@ -12,7 +12,7 @@ Vue.component('to-do-list', {
                 <ul class="no-marker">
                     <li v-for="(task, taskIndex) in card.tasks" :key="taskIndex">
                         <input type="checkbox" 
-                               :checked="task.taskCompleted" :disabled="column2.length >= 8"
+                               :checked="task.taskCompleted" :disabled="column2.length >= 5"
                                @change="toggleTaskCompletion(card, task, 'column1', index)">
                         {{ task.taskName }}
                     </li>
@@ -161,7 +161,7 @@ Vue.component('card-create', {
             this.newTasks = [];
             this.inputs = 3;
             this.errors = [];
-        }
+        },
     }
 });
 
@@ -208,6 +208,6 @@ let app = new Vue({
             localStorage.setItem('column1', JSON.stringify(this.column1));
             localStorage.setItem('column2', JSON.stringify(this.column2));
             localStorage.setItem('column3', JSON.stringify(this.column3));
-        }
+        },
     },
 })

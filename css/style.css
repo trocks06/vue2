@@ -19,7 +19,7 @@
     padding: 15px;
 }
 .first-column {
-    background-color: #3c65ff;
+    background-color: #0a9f0a;
 }
 .second-column {
     background-color: #ffffff;
@@ -55,7 +55,7 @@ form {
     height: fit-content;
     font-size: 32px;
     color: white;
-    background-color: #3c65ff;
+    background-color: #0a9f0a;
     border-radius: 10px;
     border: 3px solid white;
     display: flex;
@@ -71,7 +71,7 @@ input, button {
     font-size: 24px;
     margin: 0 auto;
     padding: 5px;
-    background-color: #3c65ff;
+    background-color: #0a9f0a;
     color: white;
     border: white 3px solid;
     border-radius: 10px;
@@ -93,4 +93,7 @@ input:focus {
 h3 {
     text-align: center;
     margin-bottom: 10px;
+}
+.disabled {
+    display: none;
 }
